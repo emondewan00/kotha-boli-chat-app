@@ -4,6 +4,7 @@ import Register from "../pages/Register";
 import Inbox from "../pages/Inbox";
 import Conversation from "../pages/Conversation";
 import Warper from "../pages/Warper";
+import PrivateRoute from "./PrivetRoute";
 
 const router = createBrowserRouter([
   {
@@ -16,7 +17,11 @@ const router = createBrowserRouter([
   },
   {
     path: "/inbox",
-    element: <Warper />,
+    element: (
+      <PrivateRoute>
+        <Warper />
+      </PrivateRoute>
+    ),
     children: [
       {
         path: "/inbox",

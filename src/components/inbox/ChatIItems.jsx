@@ -1,28 +1,60 @@
+import { useSelector } from "react-redux";
 import ChatItem from "./ChatItem";
+import { useGetConversationsQuery } from "../../features/conversations/conversationsApi";
+import moment from "moment";
+import getPartnerInfo from "../../utils/getPartnerInfo";
+import gravatarUrl from "gravatar-url";
 
 export default function ChatItems() {
-    return (
-        <ul>
-            <li>
-                <ChatItem
-                    avatar="https://cdn.pixabay.com/photo/2018/09/12/12/14/man-3672010__340.jpg"
-                    name="Saad Hasan"
-                    lastMessage="bye"
-                    lastTime="25 minutes"
-                />
-                <ChatItem
-                    avatar="https://cdn.pixabay.com/photo/2018/09/12/12/14/man-3672010__340.jpg"
-                    name="Sumit Saha"
-                    lastMessage="will talk to you later"
-                    lastTime="10 minutes"
-                />
-                <ChatItem
-                    avatar="https://cdn.pixabay.com/photo/2018/09/12/12/14/man-3672010__340.jpg"
-                    name="Mehedi Hasan"
-                    lastMessage="thanks for your support"
-                    lastTime="15 minutes"
-                />
-            </li>
-        </ul>
+  const { user } = useSelector((state) => state.auth) || {};
+  const { data, isLoading, isSuccess, isError, error } =
+    useGetConversationsQuery(user?.email);
+  let content = null;
+
+  if (isLoading) {
+    content = (
+      <li className="m-2 text-sm">
+        <span className="inline-block text-gray-600 text-xs px-3 py-1 rounded-full bg-gray-100">
+          Loading...
+        </span>
+      </li>
     );
+  }
+
+  if (isError) {
+    content = (
+      <li>
+        <span className="inline-block text-gray-600 text-xs px-3 py-1 rounded-full bg-red-100">
+          Error: {error.message}
+        </span>
+      </li>
+    );
+  }
+
+  if (isSuccess) {
+    content = data.map((conversation) => {
+      const { id, timestamp, message, users } = conversation;
+
+      const { name, email: partnerEmail } = getPartnerInfo(
+        user?.email,
+        users
+      ) || {
+        name: "",
+        email: "",
+      };
+
+      return (
+        <li key={id}>
+          <ChatItem
+            avatar={gravatarUrl(partnerEmail)}
+            name={name}
+            lastMessage={message}
+            lastTime={moment(timestamp).fromNow()}
+          />
+        </li>
+      );
+    });
+  }
+
+  return <ul>{content}</ul>;
 }

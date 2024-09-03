@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import logoImage from "../assets/images/lws-logo-light.svg";
 import Error from "../components/ui/Error";
 import { useForm } from "react-hook-form";
+import { useEffect } from "react";
 import { useLoginMutation } from "../features/auth/authApi";
 
 export default function Login() {
@@ -11,12 +12,17 @@ export default function Login() {
 
   const onSubmit = (value) => {
     sign(value);
+  };
+
+  // Use useEffect to handle success state and navigation
+  useEffect(() => {
     if (isSuccess) {
       navigate("/inbox");
     }
-  };
+  }, [isSuccess, navigate]);
+
   return (
-    <div className="grid place-items-center h-screen bg-[#F9FAFB">
+    <div className="grid place-items-center h-screen bg-[#F9FAFB]">
       <div className="min-h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div>
@@ -87,7 +93,7 @@ export default function Login() {
               </button>
             </div>
 
-            {isError && <Error message={error.data} />}
+            {isError && <Error message={error?.data || "An error occurred"} />}
           </form>
         </div>
       </div>

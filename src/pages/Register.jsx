@@ -3,22 +3,31 @@ import logoImage from "../assets/images/lws-logo-light.svg";
 import { useForm } from "react-hook-form";
 import Error from "../components/ui/Error";
 import { useRegisterMutation } from "../features/auth/authApi";
+import { useEffect, useState } from "react";
 
 export default function Register() {
   const { register, handleSubmit } = useForm();
   const [signUp, { data, isError, error: resError }] = useRegisterMutation();
-  const navigation = useNavigate();
+  const [passMatch, setPassMatch] = useState("");
+  const navigate = useNavigate();
 
-  const onSubmit = (value) => {
+  const onSubmit = ({ confirmPassword, password, ...rest }) => {
     // Handle form submission
-    signUp(value);
-    if (data && !isError) {
-      navigation("/inbox");
+    if (confirmPassword !== password) {
+      setPassMatch("Pass word is not match");
     }
+    signUp(rest);
   };
 
+  // Use useEffect to handle successful registration and navigation
+  useEffect(() => {
+    if (data && !isError) {
+      navigate("/inbox");
+    }
+  }, [data, isError, navigate]);
+
   return (
-    <div className="grid place-items-center h-screen bg-[#F9FAFB">
+    <div className="grid place-items-center h-screen bg-[#F9FAFB]">
       <div className="min-h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div>
@@ -26,7 +35,7 @@ export default function Register() {
               <img
                 className="mx-auto h-12 w-auto"
                 src={logoImage}
-                alt="Learn with sumit"
+                alt="Learn with Sumit"
               />
             </Link>
             <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
@@ -42,12 +51,12 @@ export default function Register() {
                 </label>
                 <input
                   id="name"
-                  name="Name"
-                  type="Name"
-                  autoComplete="Name"
+                  name="name"
+                  type="text"
+                  autoComplete="name"
                   required
                   className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-violet-500 focus:border-violet-500 focus:z-10 sm:text-sm"
-                  placeholder="Name"
+                  placeholder="Full Name"
                   {...register("name", { required: true })}
                 />
               </div>
@@ -91,11 +100,11 @@ export default function Register() {
                 <input
                   id="confirmPassword"
                   name="confirmPassword"
-                  type="confirmPassword"
-                  autoComplete="current-confirmPassword"
+                  type="password"
+                  autoComplete="new-password"
                   required
                   className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-violet-500 focus:border-violet-500 focus:z-10 sm:text-sm"
-                  placeholder="confirmPassword"
+                  placeholder="Confirm Password"
                   {...register("confirmPassword", { required: true })}
                 />
               </div>
@@ -114,16 +123,20 @@ export default function Register() {
                   htmlFor="remember-me"
                   className="ml-2 block text-sm text-gray-900"
                 >
-                  Agreed with the terms and condition
+                  Agreed with the terms and conditions
                 </label>
               </div>
             </div>
 
-            {isError && <Error message={resError.data} />}
+            {isError && (
+              <Error message={resError?.data || "An error occurred"} />
+            )}
+
+            {passMatch && <Error message={passMatch} />}
 
             <div className="flex items-center justify-end">
               <div className="text-sm">
-                <span>Already have account? </span>
+                <span>Already have an account? </span>
                 <Link
                   to="/login"
                   className="font-medium text-violet-600 hover:text-violet-500"
@@ -138,7 +151,6 @@ export default function Register() {
                 type="submit"
                 className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-violet-600 hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500"
               >
-                <span className="absolute left-0 inset-y-0 flex items-center pl-3"></span>
                 Sign up
               </button>
             </div>

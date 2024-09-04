@@ -16,7 +16,7 @@ export default function Register() {
     if (confirmPassword !== password) {
       setPassMatch("Pass word is not match");
     }
-    signUp(rest);
+    signUp({ ...rest, password });
   };
 
   // Use useEffect to handle successful registration and navigation

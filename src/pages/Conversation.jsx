@@ -1,4 +1,4 @@
-import Blank from "../components/inbox/chatbody/Blank";
+import Blank from "../components/inbox/Blank";
 import Navigation from "../components/inbox/Navigation";
 import Sidebar from "../components/inbox/Sidebar";
 

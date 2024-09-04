@@ -15,26 +15,27 @@ export default function ChatBody() {
   if (isLoading) {
     content = <div>Loading...</div>;
   }
+
   if (isError) {
     content = <div>Error: {error?.data || "An error occurred"}</div>;
   }
 
   if (isSuccess && data.length > 0) {
-    content = <Messages messages={data} />;
+    console.log(data[0]);
+
+    content = (
+      <>
+        <ChatHead message={data[0]} />
+        <Messages messages={data} />
+        <Options />
+      </>
+    );
   } else {
     content = <Blank />;
   }
-
   return (
     <div className="w-full lg:col-span-2 lg:block">
-      <div className="w-full grid conversation-row-grid">
-        <ChatHead
-          avatar="https://cdn.pixabay.com/photo/2018/01/15/07/51/woman-3083383__340.jpg"
-          name="Akash Ahmed"
-        />
-        {content}
-        <Options />
-      </div>
+      <div className="w-full grid conversation-row-grid">{content}</div>
     </div>
   );
 }

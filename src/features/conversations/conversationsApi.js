@@ -22,6 +22,16 @@ export const conversationsApi = apiSlice.injectEndpoints({
         body: data,
       }),
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        const patchResult = dispatch(
+          apiSlice.util.updateQueryData(
+            "getConversations",
+            arg.sender,
+            (draft) => {
+              draft.push(arg.data);
+            }
+          )
+        );
+
         try {
           const result = await queryFulfilled;
 
@@ -41,6 +51,7 @@ export const conversationsApi = apiSlice.injectEndpoints({
           );
         } catch (error) {
           console.error(error);
+          patchResult.undo();
         }
       },
     }),

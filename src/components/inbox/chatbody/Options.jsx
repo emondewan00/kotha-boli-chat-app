@@ -24,6 +24,7 @@ export default function Options({ messages }) {
         timestamp: new Date().getTime(),
       },
     });
+    setMessage("");
   };
 
   return (

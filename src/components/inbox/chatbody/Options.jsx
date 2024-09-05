@@ -1,21 +1,29 @@
 import { useState } from "react";
-import { useSendMessageMutation } from "../../../features/messages/messagesApi";
-import { useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
+import { useEditConversationMutation } from "../../../features/conversations/conversationsApi";
 
 export default function Options({ messages }) {
   const [message, setMessage] = useState("");
-  const [sendMessage, { data }] = useSendMessageMutation();
-  const dispatch = useDispatch();
-  const { id, timestamp, ...restMessage } = messages;
+  const [editConversation, { data: editedConversation }] =
+    useEditConversationMutation();
+  const { receiver, sender, conversationId } = messages;
+  const { user } = useSelector((state) => state.auth);
+
+  const participant = receiver.email !== user.email ? receiver : sender;
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    dispatch(
-      sendMessage({
-        ...restMessage,
+
+    editConversation({
+      id: conversationId,
+      sender: user.email,
+      data: {
+        participant: `${user?.email}-${participant.email}`,
+        users: [user, participant],
         message,
         timestamp: new Date().getTime(),
-      })
-    );
+      },
+    });
   };
 
   return (

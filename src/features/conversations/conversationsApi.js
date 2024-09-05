@@ -51,6 +51,20 @@ export const conversationsApi = apiSlice.injectEndpoints({
         body: data,
       }),
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        const patchResult = dispatch(
+          apiSlice.util.updateQueryData(
+            "getConversations",
+            arg.sender,
+            (draft) => {
+              const draftConversation = draft.find(
+                (conversation) => conversation.id === arg.id
+              );
+              draftConversation.message = arg.data.message;
+              draftConversation.timestamp = arg.data.timestamp;
+            }
+          )
+        );
+
         try {
           const result = await queryFulfilled;
 
@@ -70,6 +84,7 @@ export const conversationsApi = apiSlice.injectEndpoints({
           );
         } catch (error) {
           console.error(error);
+          patchResult.undo();
         }
       },
     }),

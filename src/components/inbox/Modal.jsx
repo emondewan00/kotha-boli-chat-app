@@ -4,7 +4,11 @@ import { useGetUserQuery } from "../../features/users/usersApi";
 import debounceHandler from "../../utils/debounceHandler";
 import Error from "../ui/Error";
 import { useDispatch, useSelector } from "react-redux";
-import { conversationsApi } from "../../features/conversations/conversationsApi";
+import {
+  conversationsApi,
+  useAddConversationMutation,
+  useEditConversationMutation,
+} from "../../features/conversations/conversationsApi";
 
 export default function Modal({ open, control }) {
   const [to, setTo] = useState("");
@@ -21,6 +25,9 @@ export default function Modal({ open, control }) {
   } = useGetUserQuery(to, {
     skip: !runUserQuery,
   });
+
+  const [addConversation, { isLoading }] = useAddConversationMutation();
+  const [editConversation, { isSuccess }] = useEditConversationMutation();
 
   useEffect(() => {
     if (participant?.length > 0 && participant[0].email !== user?.email) {
@@ -46,7 +53,28 @@ export default function Modal({ open, control }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Submit");
+    if (conversation.length > 0) {
+      // edit conversation
+      editConversation({
+        id: conversation[0].id,
+        data: {
+          participant: `${user?.email}-${to}`,
+          users: [user, participant[0]],
+          message,
+          timestamp: new Date().getTime(),
+        },
+      });
+      control(); //this function for closed for modal
+    } else if (conversation?.length === 0) {
+      // add conversation
+      addConversation({
+        participants: `${user?.email}-${to}}`,
+        users: [user, participant[0]],
+        message,
+        timestamp: new Date().getTime(),
+      });
+      control(); //this function for closed for modal
+    }
   };
 
   return (
@@ -70,8 +98,9 @@ export default function Modal({ open, control }) {
                 <input
                   id="to"
                   name="to"
-                  type="to"
+                  type="text"
                   required
+                  value={to}
                   onChange={(e) => handleSearch(e.target.value)}
                   className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-violet-500 focus:border-violet-500 focus:z-10 sm:text-sm"
                   placeholder="Send to"
@@ -84,8 +113,10 @@ export default function Modal({ open, control }) {
                 <textarea
                   id="message"
                   name="message"
-                  type="message"
+                  type="text"
                   required
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
                   className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-violet-500 focus:border-violet-500 focus:z-10 sm:text-sm"
                   placeholder="Message"
                 />

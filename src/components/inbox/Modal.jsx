@@ -31,8 +31,13 @@ export default function Modal({ open, control }) {
 
   useEffect(() => {
     if (participant?.length > 0 && participant[0].email !== user?.email) {
-      dispatch(conversationsApi.endpoints.getConversation.initiate({}))
-        .unwrap({ userEmail: user?.email, participantEmail: to })
+      dispatch(
+        conversationsApi.endpoints.getConversation.initiate({
+          userEmail: user?.email,
+          participantEmail: to,
+        })
+      )
+        .unwrap()
         .then((data) => {
           setConversation(data);
         })
@@ -57,6 +62,7 @@ export default function Modal({ open, control }) {
       // edit conversation
       editConversation({
         id: conversation[0].id,
+        sender: user.email,
         data: {
           participant: `${user?.email}-${to}`,
           users: [user, participant[0]],
@@ -68,10 +74,13 @@ export default function Modal({ open, control }) {
     } else if (conversation?.length === 0) {
       // add conversation
       addConversation({
-        participants: `${user?.email}-${to}}`,
-        users: [user, participant[0]],
-        message,
-        timestamp: new Date().getTime(),
+        sender: user.email,
+        data: {
+          participants: `${user?.email}-${to}}`,
+          users: [user, participant[0]],
+          message,
+          timestamp: new Date().getTime(),
+        },
       });
       control(); //this function for closed for modal
     }

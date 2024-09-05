@@ -21,13 +21,11 @@ export default function ChatBody() {
   }
 
   if (isSuccess && data.length > 0) {
-    console.log(data[0]);
-
     content = (
       <>
         <ChatHead message={data[0]} />
         <Messages messages={data} />
-        <Options />
+        <Options messages={data[0]} />
       </>
     );
   } else {

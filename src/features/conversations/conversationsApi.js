@@ -1,5 +1,6 @@
 import apiSlice from "../api/apiSlice";
 import { messagesApi } from "../messages/messagesApi";
+import { io } from "socket.io-client";
 
 export const conversationsApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -8,6 +9,43 @@ export const conversationsApi = apiSlice.injectEndpoints({
         url: `/conversations?participants_like=${email}&_sort=timestamp&_order=desc&_page=1&_limit=5`,
         method: "GET",
       }),
+      async onCacheEntryAdded(
+        arg,
+        { updateCachedData, cacheDataLoaded, cacheEntryRemoved }
+      ) {
+        const socket = io("http://localhost:9000", {
+          reconnectionDelay: 1000,
+          reconnection: true,
+          reconnectionAttemps: 10,
+          transports: ["websocket"],
+          agent: false,
+          upgrade: false,
+          rejectUnauthorized: false,
+        });
+
+        try {
+          await cacheDataLoaded;
+          socket.on("conversation", (data) => {
+            updateCachedData((draft) => {
+              const conversation = draft?.find((c) => {
+                return c.id == data?.data?.id;
+              });
+
+              if (conversation?.id) {
+                conversation.message = data?.data?.message;
+                conversation.timestamp = data?.data?.timestamp;
+              } else {
+                //
+                draft.push(data?.data);
+                draft.sort((a, b) => b.timestamp - a.timestamp);
+              }
+            });
+          });
+        } catch (err) {}
+
+        await cacheEntryRemoved;
+        socket.close();
+      },
     }),
     getConversation: builder.query({
       query: ({ userEmail, participantEmail }) => ({
@@ -22,17 +60,6 @@ export const conversationsApi = apiSlice.injectEndpoints({
         body: data,
       }),
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
-        const patchResult = dispatch(
-          apiSlice.util.updateQueryData(
-            "getConversations",
-            arg.sender,
-            (draft) => {
-              draft.push(arg.data);
-              draft.sort((a, b) => b.timestamp - a.timestamp);
-            }
-          )
-        );
-
         try {
           const result = await queryFulfilled;
 
@@ -52,7 +79,6 @@ export const conversationsApi = apiSlice.injectEndpoints({
           );
         } catch (error) {
           console.error(error);
-          patchResult.undo();
         }
       },
     }),

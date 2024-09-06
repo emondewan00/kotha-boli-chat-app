@@ -14,6 +14,19 @@ export const messagesApi = apiSlice.injectEndpoints({
         method: "POST",
         body: data,
       }),
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          const message = await queryFulfilled;
+          const id = message.data.conversationId.toString();
+          dispatch(
+            apiSlice.util.updateQueryData("getMessages", id, (draft) => {
+              draft.push(message.data);
+            })
+          );
+        } catch (error) {
+          console.error(error);
+        }
+      },
     }),
   }),
 });

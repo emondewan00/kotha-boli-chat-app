@@ -28,6 +28,7 @@ export const conversationsApi = apiSlice.injectEndpoints({
             arg.sender,
             (draft) => {
               draft.push(arg.data);
+              draft.sort((a, b) => b.timestamp - a.timestamp);
             }
           )
         );
@@ -72,6 +73,7 @@ export const conversationsApi = apiSlice.injectEndpoints({
               );
               draftConversation.message = arg.data.message;
               draftConversation.timestamp = arg.data.timestamp;
+              draft.sort((a, b) => b.timestamp - a.timestamp);
             }
           )
         );

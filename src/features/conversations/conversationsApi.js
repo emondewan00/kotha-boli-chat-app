@@ -41,7 +41,9 @@ export const conversationsApi = apiSlice.injectEndpoints({
               }
             });
           });
-        } catch (err) {}
+        } catch (err) {
+          console.error(err);
+        }
 
         await cacheEntryRemoved;
         socket.close();

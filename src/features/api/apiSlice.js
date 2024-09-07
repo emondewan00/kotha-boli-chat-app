@@ -16,6 +16,7 @@ const baseQueryWithReAuth = async (arg, api, option) => {
   const result = await baseQuery(arg, api, option);
   if (result.error && result.error.status === 401) {
     api.dispatch(userLoggedOut());
+    window.location.replace("/");
   }
   return result;
 };

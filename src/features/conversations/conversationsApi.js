@@ -9,6 +9,13 @@ export const conversationsApi = apiSlice.injectEndpoints({
         url: `/conversations?participants_like=${email}&_sort=timestamp&_order=desc&_page=1&_limit=5`,
         method: "GET",
       }),
+      transformResponse(apiResponse, meta) {
+        const totalCount = meta.response.headers.get("X-Total-Count");
+        return {
+          conversations: apiResponse,
+          totalCount,
+        };
+      },
       async onCacheEntryAdded(
         arg,
         { updateCachedData, cacheDataLoaded, cacheEntryRemoved }
@@ -27,7 +34,8 @@ export const conversationsApi = apiSlice.injectEndpoints({
           await cacheDataLoaded;
           socket.on("conversation", (data) => {
             updateCachedData((draft) => {
-              const conversation = draft?.find((c) => {
+              const { conversations } = draft;
+              const conversation = conversations?.find((c) => {
                 return c.id == data?.data?.id;
               });
 
@@ -36,8 +44,8 @@ export const conversationsApi = apiSlice.injectEndpoints({
                 conversation.timestamp = data?.data?.timestamp;
               } else {
                 //
-                draft.push(data?.data);
-                draft.sort((a, b) => b.timestamp - a.timestamp);
+                conversations.push(data?.data);
+                conversations.sort((a, b) => b.timestamp - a.timestamp);
               }
             });
           });
@@ -96,12 +104,13 @@ export const conversationsApi = apiSlice.injectEndpoints({
             "getConversations",
             arg.sender,
             (draft) => {
-              const draftConversation = draft.find(
+              const { conversations } = draft;
+              const draftConversation = conversations.find(
                 (conversation) => conversation.id === arg.id
               );
               draftConversation.message = arg.data.message;
               draftConversation.timestamp = arg.data.timestamp;
-              draft.sort((a, b) => b.timestamp - a.timestamp);
+              conversations.sort((a, b) => b.timestamp - a.timestamp);
             }
           )
         );

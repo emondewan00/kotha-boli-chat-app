@@ -10,8 +10,9 @@ export default function ChatItems() {
   const { user } = useSelector((state) => state.auth) || {};
   const { data, isLoading, isSuccess, isError, error } =
     useGetConversationsQuery(user?.email);
-  let content = null;
+  const { conversations, totalCount } = data || {};
 
+  let content = null;
   if (isLoading) {
     content = (
       <li className="m-2 text-sm">
@@ -33,7 +34,7 @@ export default function ChatItems() {
   }
 
   if (isSuccess) {
-    content = data.map((conversation) => {
+    content = conversations.map((conversation) => {
       const { id, timestamp, message, users } = conversation;
 
       const { name, email: partnerEmail } = getPartnerInfo(
